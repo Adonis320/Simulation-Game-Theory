@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="gs-algo">
+    <CLASSES />
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/lib/gs-algo-master/src" />
+    </SOURCES>
+  </library>
+</component>

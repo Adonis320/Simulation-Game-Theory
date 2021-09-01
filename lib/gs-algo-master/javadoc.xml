@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="javadoc">
+    <target name="javadoc">
+        <javadoc 
+        	access="public" 
+        	author="true" 
+        	classpath="../gs-core/lib/mbox2.jar:../gs-core/lib/util.jar:../gs-core/lib/pherd.jar:../gs-core/bin/:./lib/commons-math-2.1.jar" 
+        	destdir="doc" 
+        	doctitle="GraphStream 2.0 API" 
+        	nodeprecated="false" 
+        	nodeprecatedlist="false" 
+        	noindex="false" 
+        	nonavbar="false" 
+        	notree="false"  
+        	source="1.8" 
+        	sourcepath="src" 
+        	splitindex="true" 
+        	use="true" 
+        	version="true" >
+        	<tag name="complexity" scope="all" description="Computational Complexity:"/>
+        	<tag name="reference" scope="all" description="Scientific Reference:"/>
+        </javadoc>
+    </target>
+</project>

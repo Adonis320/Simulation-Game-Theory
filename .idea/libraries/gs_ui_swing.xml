@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="gs-ui-swing">
+    <CLASSES />
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/lib/gs-ui-swing-master/src" />
+    </SOURCES>
+  </library>
+</component>

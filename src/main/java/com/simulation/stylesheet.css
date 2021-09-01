@@ -1,0 +1,23 @@
+node.'normal' {
+	fill-color: rgb(79,195,247);
+}
+
+node.'malicious' {
+	fill-color: rgb(219,68,55);
+}
+
+node.'idn' {
+	fill-color: rgb(244,180,0);
+}
+
+node.'detected' {
+
+}
+
+node {
+    size: 20px;
+	stroke-mode: plain;
+	stroke-color: black;
+	stroke-width: 1px;
+}
+

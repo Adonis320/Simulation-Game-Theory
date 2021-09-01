@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="gs-core">
+    <CLASSES />
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/lib/gs-core-master/src" />
+    </SOURCES>
+  </library>
+</component>
