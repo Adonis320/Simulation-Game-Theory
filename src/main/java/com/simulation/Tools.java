@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Tools {
 
-    public Tools(){
+    public Tools() {
 
     }
 
@@ -22,7 +22,7 @@ public class Tools {
         return result;
     }
 
-    public int[] add_id(int[] table, int id){
+    public int[] add_id(int[] table, int id) {
         int[] result = new int[table.length + 1];
 
         for (int i = 0; i < table.length; i++) {
@@ -46,11 +46,11 @@ public class Tools {
         return exists;
     }
 
-    
+
     public String convertToCSV(String[] data) {
         return Stream.of(data)
-          .map(this::escapeSpecialCharacters)
-          .collect(Collectors.joining(";"));
+                .map(this::escapeSpecialCharacters)
+                .collect(Collectors.joining(";"));
     }
 
     public String escapeSpecialCharacters(String data) {
@@ -66,8 +66,8 @@ public class Tools {
         File csvOutputFile = new File("results.csv");
         try (PrintWriter pw = new PrintWriter(csvOutputFile)) {
             stats.stream()
-              .map(this::convertToCSV)
-              .forEach(pw::println);
+                    .map(this::convertToCSV)
+                    .forEach(pw::println);
         }
     }
 

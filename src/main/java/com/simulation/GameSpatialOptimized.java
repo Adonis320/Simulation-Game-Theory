@@ -3,16 +3,11 @@ package com.simulation;
 import org.graphstream.algorithm.generator.*;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.SingleGraph;
-import org.graphstream.ui.layout.Layout;
-import org.graphstream.ui.layout.springbox.implementations.LinLog;
 import org.graphstream.ui.view.Viewer;
 
-import javax.swing.*;
-import javax.tools.Tool;
 import java.util.Random;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 public class GameSpatialOptimized {
@@ -25,6 +20,7 @@ public class GameSpatialOptimized {
     public double g_a = 5; // gain on successfull attack, also loss on failed defense
     public double alpha = 0.9; // detection rate
     public double beta = 0.005; // false alarm rate
+    public double phi_malicious = 0.9;
 
     // Simulation setup
     public int nodes_number = 200; // total number of nodes
@@ -40,45 +36,22 @@ public class GameSpatialOptimized {
     // Variables for representing the graph
     public Graph graph; // The graph representing the network and connections
     public Generator gen; // The generator that generates connections
-    //public RandomEuclideanGenerator gen;
     public Viewer viewer;
-    public int number_IDN;
     public Tools tools = new Tools();
 
-    public double p_x = 0.8;
-    public double phi_malicious = 0.9;
+    public double p_x = 0.2; // IDN exchange probability
+
     // Constructor
     public GameSpatialOptimized() {
         game_history = new Node[max_turns][nodes_number];
         generate_graph();
-        //viewer = graph.display(true);
 
-
-        //viewer = graph.display(false);
-        ////viewer.enableAutoLayout();
         nodes = initialize_game();
         shuffle_nodes();
-        //allocate_IDN();
-        number_IDN = get_number_IDN();
+
         apply_style_to_graph();
 
         initialize_beliefs();
-/*
-        Layout layout = new LinLog(false);
-        layout.addAttributeSink(graph);
-
-
-        while(layout.getStabilization() < 0.9){
-            layout.compute();
-        }
-        viewer.enableAutoLayout(layout);
-*/
-        /*Graph graph2 = new SingleGraph("Spatial Simulation");
-        Generator gen2 = new IncompleteGridGenerator(true, 0.5F,1,1);
-        gen2.addSink(graph);
-        gen2.begin();
-        gen2.nextEvents();
-        Viewer viewer2 = graph2.display(true);*/
     }
 
     // Initializes nodes, sets the number of malicious, normal and IDN nodes
@@ -117,25 +90,11 @@ public class GameSpatialOptimized {
             if (nodes[i].type.equals("Malicious")) {
                 graph.getNode(i).setAttribute("ui.class", "malicious");
             } else if (nodes[i].type.equals("IDN")) {
-                //String style = "node#"+ Integer.toString(i) +"{ fill-color: yellow; }";
                 graph.getNode(i).setAttribute("ui.class", "idn");
             } else {
-                //String style = "node#"+ Integer.toString(i) +"{ fill-color: blue; }";
                 graph.getNode(i).setAttribute("ui.class", "normal");
             }
-            //graph.getNode(i).setAttribute("layout.weight","5000000");
         }
-    }
-
-    public int get_number_IDN() {
-        int number_idn = 0;
-
-        for (int i = 0; i < nodes.length; i++) {
-            if (nodes[i].type.equals("IDN")) {
-                number_idn++;
-            }
-        }
-        return number_idn;
     }
 
     public Node[] get_normal_nodes() {
@@ -152,7 +111,7 @@ public class GameSpatialOptimized {
 
     public void exchange_roles() {
         Random random = new Random();
-        if(p != 1){
+        if (p != 1) {
             for (int i = 0; i < nodes_number; i++) {
                 if (nodes[i].type.equals("IDN") & !nodes[i].detected) {
                     boolean picked = false;
@@ -194,113 +153,11 @@ public class GameSpatialOptimized {
         return has_IDN_neighbour;
     }
 
-    /*
-    public void allocate_IDN(){
-        Random random = new Random();
-
-        for(int i = 0; i < nodes.length; i++){
-            if(!has_IDN_neighbour(nodes[i].id)){
-                Stream<org.graphstream.graph.Node> stream_neighbors = graph.getNode(nodes[i].id).neighborNodes();
-                org.graphstream.graph.Node [] array_neighbours = stream_neighbors.toArray(org.graphstream.graph.Node[]::new);
-                Node [] neighbours = new Node[array_neighbours.length];
-                for(int j = 0; j < array_neighbours.length; j++){
-                    neighbours[j] = nodes[array_neighbours[j].getIndex()];
-                }
-
-                int random_int = random.nextInt(neighbours.length);
-
-                if(!neighbours[random_int].type.equals("Malicious")){
-                    nodes[neighbours[random_int].id].type = "IDN";
-                }
-            }
-        }
-
-        //System.out.println("Number IDN atleast: " + get_number_IDN());
-
-        int number_IDN = get_number_IDN();
-        int number_IDN_remaining = (int)((nodes_number - nodes_number*phi)*p) - number_IDN;
-
-        //System.out.println("Rem" + number_IDN_remaining);
-        for(int i = 0; i < number_IDN_remaining; i++){
-            Node[] normal = get_normal_nodes();
-            int random_int = random.nextInt(normal.length);
-            nodes[normal[random_int].id].type = "IDN";
-        }
-
-
-    }*/
-
-    /*
-    public void allocate_IDN_at_least_one(){
-        for(int i = 0; i < nodes_number; i++){
-                Stream<org.graphstream.graph.Node> stream_neighbors = graph.getNode(nodes[i].id).neighborNodes();
-                org.graphstream.graph.Node [] array_neighbours = stream_neighbors.toArray(org.graphstream.graph.Node[]::new);
-                Node [] neighbours = new Node[array_neighbours.length];
-
-                int number_of_idn = 0;
-                for(int j = 0; j < array_neighbours.length; j++){
-                    neighbours[j] = nodes[array_neighbours[j].getIndex()];
-                    if(neighbours[j].type.equals("IDN")){
-                        number_of_idn++;
-                    }
-                }
-
-
-
-
-        }
-    }*/
-
-
-    /*public void allocate_IDN(){
-
-        Node [] neighbours_to_all = new Node[0];
-
-        for(int i = 0; i < nodes_number; i++){
-            if(nodes[i].type.equals("Malicious")){
-                Stream<org.graphstream.graph.Node> stream_neighbors = graph.getNode(nodes[i].id).neighborNodes();
-                org.graphstream.graph.Node [] array_neighbours = stream_neighbors.toArray(org.graphstream.graph.Node[]::new);
-                //Node [] neighbours = new Node[array_neighbours.length];
-
-                for(int j = 0; j < array_neighbours.length; j++){
-                    //neighbours[j] = nodes[array_neighbours[j].getIndex()];
-                    if(!tools.id_exists( nodes[array_neighbours[j].getIndex()].id, neighbours_to_all) & !nodes[array_neighbours[j].getIndex()].type.equals("Malicious")){
-                        neighbours_to_all = tools.add_node(neighbours_to_all, nodes[array_neighbours[j].getIndex()]);
-                    }
-                }
-                /*
-                Random random = new Random();
-                for(int j = 0; j < array_neighbours.length; j++){
-                    if(!nodes[neighbours[j].id].type.equals("Malicious")){
-                        double random_double = random.nextDouble();
-                        if(random_double <= p){
-                            nodes[neighbours[j].id].type = "IDN";
-                        }
-                    }
-                }*/
-
-            /*}
-        }
-
-        Random random = new Random();
-        for(int j = 0; j < neighbours_to_all.length; j++){
-            double random_double = random.nextDouble();
-            if(random_double <= p){
-                nodes[neighbours_to_all[j].id].type = "IDN";
-            }
-        }
-    }*/
-
     public void generate_graph() {
         graph = new SingleGraph("Spatial Simulation");
-        //graph.setAttribute("ui.stylesheet", "graph { fill-color: red; }");
-        //graph.setAttribute("ui.stylesheet", "node#1 { fill-color: red; }");
-        //gen = new RandomGenerator(6);
+
         gen = new DorogovtsevMendesGenerator();
-        //gen = new GridGenerator();
-        //gen = new RandomEuclideanGenerator();
-        //gen = new IncompleteGridGenerator(true, 0.5F,1,1);
-        //gen.setThreshold(0.119);
+
         gen.addSink(graph);
         gen.begin();
 
@@ -308,53 +165,9 @@ public class GameSpatialOptimized {
         for (int i = 0; i < nodes_number - 3; i++) {
             gen.nextEvents();
         }
-        /*for (int i = 0; i < nodes_number-1; i++) {
-            gen.nextEvents();
-        }*/
+
         gen.end();
-
-        //graph.setAttribute("ui.stylesheet", "url('C:\\Users\\MSI\\Desktop\\PHD-Track\\Expérimentation\\Simulations\\simulation\\src\\main\\java\\com\\simulation\\stylesheet.css')");
-
-        //System.out.println(graph.getNodeCount());
-
-        /*for(int i = 0; i < nodes_number; i++){
-            if(nodes[i].type.equals("Malicious")){
-                graph.getNode(i).setAttribute("ui.class", "malicious");
-            }else if(nodes[i].type.equals("IDN")){
-                //String style = "node#"+ Integer.toString(i) +"{ fill-color: yellow; }";
-                graph.getNode(i).setAttribute("ui.class", "idn");
-            }else{
-                //String style = "node#"+ Integer.toString(i) +"{ fill-color: blue; }";
-                graph.getNode(i).setAttribute("ui.class", "normal");
-            }
-        }*/
-        //graph.getNode(5).setAttribute("ui.stylesheet", "{ fill-color: red; }");
-
-        /*
-        for(int i = 0; i < nodes_number; i++){
-            if(nodes[i].type.equals("Malicious")){
-                String style = "node#"+ Integer.toString(i) +"{ fill-color: red; }";
-                graph.setAttribute("ui.stylesheet", style);
-            }else if(nodes[i].type.equals("IDN")){
-                String style = "node#"+ Integer.toString(i) +"{ fill-color: yellow; }";
-                graph.setAttribute("ui.stylesheet", style);
-            }else{
-                String style = "node#"+ Integer.toString(i) +"{ fill-color: blue; }";
-                graph.setAttribute("ui.stylesheet", style);
-            }
-        }*/
-
-        /*Stream<org.graphstream.graph.Node> stream = graph.getNode(0).neighborNodes();
-
-        org.graphstream.graph.Node [] array = stream.toArray(org.graphstream.graph.Node[]::new);
-
-        for(int i = 0; i < array.length; i++){
-            System.out.println(array[i].getIndex());
-        }*/
-        //System.out.println(graph.getNode(0).neighborNodes());
         //viewer = graph.display(true);
-
-        //viewer.disableAutoLayout();
     }
 
     // Randomly shuffles the position of nodes inside the network
@@ -383,7 +196,6 @@ public class GameSpatialOptimized {
                 game_history[i][j] = new Node(nodes[j]);
             }
             exchange_roles();
-            //TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -505,7 +317,6 @@ public class GameSpatialOptimized {
                 game_history[i][j] = new Node(nodes[j]);
             }
             exchange_roles();
-            //TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -540,7 +351,6 @@ public class GameSpatialOptimized {
         receiver.play_dynamic("Receiver", belief_phi, belief_p);
 
 
-
         Random rand = new Random();
 
         double monitor_prob = 0;
@@ -550,23 +360,23 @@ public class GameSpatialOptimized {
             if (belief_phi < sender.phi_threshold) {
                 attack_prob = 1;
                 monitor_prob = 0;
-            }else{
-                attack_prob = (c_m + beta * g_a)/(belief_phi*g_a*(2*alpha+beta));
-                monitor_prob = (g_a - c_a)/(2*belief_p*alpha*g_a);
+            } else {
+                attack_prob = (c_m + beta * g_a) / (belief_phi * g_a * (2 * alpha + beta));
+                monitor_prob = (g_a - c_a) / (2 * belief_p * alpha * g_a);
             }
-        }else{
-            if(belief_p < receiver.p_threshold & belief_phi > sender.phi_threshold){
+        } else {
+            if (belief_p < receiver.p_threshold & belief_phi > sender.phi_threshold) {
                 attack_prob = 1;
                 monitor_prob = 1;
-            }else if(belief_p < receiver.p_threshold & belief_phi < sender.phi_threshold){
+            } else if (belief_p < receiver.p_threshold & belief_phi < sender.phi_threshold) {
                 attack_prob = 1;
                 monitor_prob = 0;
-            }else if(belief_p > receiver.p_threshold & belief_phi < sender.phi_threshold){
+            } else if (belief_p > receiver.p_threshold & belief_phi < sender.phi_threshold) {
                 attack_prob = 1;
                 monitor_prob = 0;
-            }else if(belief_p > receiver.p_threshold & belief_phi > sender.phi_threshold){
-                attack_prob = (c_m + beta * g_a)/(belief_phi*g_a*(2*alpha+beta));
-                monitor_prob = (g_a - c_a)/(2*belief_p*alpha*g_a);
+            } else if (belief_p > receiver.p_threshold & belief_phi > sender.phi_threshold) {
+                attack_prob = (c_m + beta * g_a) / (belief_phi * g_a * (2 * alpha + beta));
+                monitor_prob = (g_a - c_a) / (2 * belief_p * alpha * g_a);
             }
         }
 
@@ -648,9 +458,11 @@ public class GameSpatialOptimized {
             }
         }
 
-        if(receiver.beliefs_phi[sender.id]>phi_malicious){
+        if (receiver.beliefs_phi[sender.id] > phi_malicious) {
             sender.detected = true;
-            graph.getNode(sender.id).setAttribute("ui.class", "detected");
+            if (sender.type.equals("Malicious")) {
+                graph.getNode(sender.id).setAttribute("ui.class", "detected");
+            }
         }
     }
 

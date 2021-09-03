@@ -4,12 +4,10 @@ import org.graphstream.algorithm.generator.*;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.view.Viewer;
-import org.miv.mbox.net.Sender;
 
 import java.util.Random;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 public class GameSpatial {
@@ -22,7 +20,8 @@ public class GameSpatial {
     public double g_a = 5; // gain on successfull attack, also loss on failed defense
     public double alpha = 0.9; // detection rate
     public double beta = 0.005; // false alarm rate
-    public double phi_malicious = 0.3;
+
+    public double phi_malicious = 0.9; // thershold of belief, used in dynamic context
 
     // Simulation setup
     public int nodes_number = 200; // total number of nodes
@@ -38,17 +37,13 @@ public class GameSpatial {
     // Variables for representing the graph
     public Graph graph; // The graph representing the network and connections
     public Generator gen; // The generator that generates connections
-    //public RandomEuclideanGenerator gen;
-    public Viewer viewer;
-
-    public int number_IDN;
+    public Viewer viewer; // To view the graph
 
     // Constructor
     public GameSpatial() {
         game_history = new Node[max_turns][nodes_number];
         nodes = initialize_game();
         shuffle_nodes();
-        number_IDN = get_number_IDN();
         generate_graph();
         apply_style_to_graph();
         initialize_beliefs();
@@ -63,18 +58,6 @@ public class GameSpatial {
                 nodes[i].beliefs_phi[j] = phi;
             }
         }
-    }
-
-    public int get_number_IDN() {
-        int number_idn = 0;
-
-        for (int i = 0; i < nodes.length; i++) {
-            if (nodes[i].type.equals("IDN")) {
-                number_idn++;
-            }
-        }
-
-        return number_idn;
     }
 
     // Initializes nodes, sets the number of malicious, normal and IDN nodes
@@ -106,13 +89,9 @@ public class GameSpatial {
 
     public void generate_graph() {
         graph = new SingleGraph("Spatial Simulation");
-        //graph.setAttribute("ui.stylesheet", "graph { fill-color: red; }");
-        //graph.setAttribute("ui.stylesheet", "node#1 { fill-color: red; }");
-        //gen = new RandomGenerator(2);
+
         gen = new DorogovtsevMendesGenerator();
-        //gen = new GridGenerator();
-        //gen = new RandomEuclideanGenerator();
-        //gen.setThreshold(0.119);
+
         gen.addSink(graph);
         gen.begin();
 
@@ -122,48 +101,7 @@ public class GameSpatial {
         }
         gen.end();
 
-        //graph.setAttribute("ui.stylesheet", "url('C:\\Users\\MSI\\Desktop\\PHD-Track\\Expérimentation\\Simulations\\simulation\\src\\main\\java\\com\\simulation\\stylesheet.css')");
-
-        //System.out.println(graph.getNodeCount());
-
-        /*for(int i = 0; i < nodes_number; i++){
-            if(nodes[i].type.equals("Malicious")){
-                graph.getNode(i).setAttribute("ui.class", "malicious");
-            }else if(nodes[i].type.equals("IDN")){
-                //String style = "node#"+ Integer.toString(i) +"{ fill-color: yellow; }";
-                graph.getNode(i).setAttribute("ui.class", "idn");
-            }else{
-                //String style = "node#"+ Integer.toString(i) +"{ fill-color: blue; }";
-                graph.getNode(i).setAttribute("ui.class", "normal");
-            }
-        }*/
-        //graph.getNode(5).setAttribute("ui.stylesheet", "{ fill-color: red; }");
-
-        /*
-        for(int i = 0; i < nodes_number; i++){
-            if(nodes[i].type.equals("Malicious")){
-                String style = "node#"+ Integer.toString(i) +"{ fill-color: red; }";
-                graph.setAttribute("ui.stylesheet", style);
-            }else if(nodes[i].type.equals("IDN")){
-                String style = "node#"+ Integer.toString(i) +"{ fill-color: yellow; }";
-                graph.setAttribute("ui.stylesheet", style);
-            }else{
-                String style = "node#"+ Integer.toString(i) +"{ fill-color: blue; }";
-                graph.setAttribute("ui.stylesheet", style);
-            }
-        }*/
-
-        /*Stream<org.graphstream.graph.Node> stream = graph.getNode(0).neighborNodes();
-
-        org.graphstream.graph.Node [] array = stream.toArray(org.graphstream.graph.Node[]::new);
-
-        for(int i = 0; i < array.length; i++){
-            System.out.println(array[i].getIndex());
-        }*/
-        //System.out.println(graph.getNode(0).neighborNodes());
         //viewer = graph.display(true);
-
-        //viewer.disableAutoLayout();
     }
 
     public void apply_style_to_graph() {
@@ -173,10 +111,8 @@ public class GameSpatial {
             if (nodes[i].type.equals("Malicious")) {
                 graph.getNode(i).setAttribute("ui.class", "malicious");
             } else if (nodes[i].type.equals("IDN")) {
-                //String style = "node#"+ Integer.toString(i) +"{ fill-color: yellow; }";
                 graph.getNode(i).setAttribute("ui.class", "idn");
             } else {
-                //String style = "node#"+ Integer.toString(i) +"{ fill-color: blue; }";
                 graph.getNode(i).setAttribute("ui.class", "normal");
             }
         }
@@ -207,8 +143,6 @@ public class GameSpatial {
             for (int j = 0; j < nodes_number; j++) {
                 game_history[i][j] = new Node(nodes[j]);
             }
-
-            //TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -221,8 +155,6 @@ public class GameSpatial {
             for (int j = 0; j < nodes_number; j++) {
                 game_history[i][j] = new Node(nodes[j]);
             }
-
-            //TimeUnit.SECONDS.sleep(1);
         }
     }
 
@@ -255,8 +187,6 @@ public class GameSpatial {
 
         sender.play_dynamic("Sender", belief_phi, belief_p);
         receiver.play_dynamic("Receiver", belief_phi, belief_p);
-
-
 
         Random rand = new Random();
 
@@ -367,7 +297,9 @@ public class GameSpatial {
 
         if(receiver.beliefs_phi[sender.id]>phi_malicious){
             sender.detected = true;
-            graph.getNode(sender.id).setAttribute("ui.class", "detected");
+            if (sender.type.equals("Malicious")){
+                graph.getNode(sender.id).setAttribute("ui.class", "detected");
+            }
         }
 
         nodes[sender.id] = sender;
@@ -388,7 +320,7 @@ public class GameSpatial {
                     double double_random = rand.nextDouble();
                     if (double_random <= alpha) {
                         sender.detected = true;
-                        //graph.getNode(sender.id).setAttribute("ui.class", "detected");
+                        graph.getNode(sender.id).setAttribute("ui.class", "detected");
                     }
                 }
             }

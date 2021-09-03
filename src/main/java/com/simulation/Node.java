@@ -23,11 +23,11 @@ public class Node {
     public double monitor_probability = 0;
     public boolean detected = false;
     public boolean ran_out_of_power = false;
-    public double [] beliefs_p;
-    public double [] beliefs_phi;
+    public double[] beliefs_p; // beliefs about being IDN
+    public double[] beliefs_phi; // beliefs about being malicious
 
     // Constructor from attributes
-    public Node(int id, double p, double phi, double c_a, double  c_m, double g_a, double alpha, double beta, String type){
+    public Node(int id, double p, double phi, double c_a, double c_m, double g_a, double alpha, double beta, String type) {
         this.id = id;
         this.p = p;
         this.phi = phi;
@@ -37,12 +37,12 @@ public class Node {
         this.type = type;
         this.alpha = alpha;
         this.beta = beta;
-        this.p_threshold = (g_a - c_a)/(2*alpha*g_a);
-        this.phi_threshold = (beta*g_a + c_m)/(g_a*(2*alpha+beta));
+        this.p_threshold = (g_a - c_a) / (2 * alpha * g_a);
+        this.phi_threshold = (beta * g_a + c_m) / (g_a * (2 * alpha + beta));
     }
 
     // Constructor by copy
-    public Node (Node node){
+    public Node(Node node) {
         this.id = node.id;
         this.p = node.p;
         this.phi = node.phi;
@@ -59,197 +59,197 @@ public class Node {
         this.detected = node.detected;
     }
 
-    public void play(String role){
-        if(p == 1){
-            if(phi < phi_threshold){ // The pure-strategy case where IDN doesn't monitor and Malicious Node always attacks
-                if(type.equals("Malicious")){
+    public void play(String role) {
+        if (p == 1) {
+            if (phi < phi_threshold) { // The pure-strategy case where IDN doesn't monitor and Malicious Node always attacks
+                if (type.equals("Malicious")) {
                     this.current_action = "Attack";
                     energy_level--;
-                }else if(type.equals("IDN")){
+                } else if (type.equals("IDN")) {
                     this.current_action = "Not";
-                }else{
+                } else {
                     this.current_action = "Not";
                 }
-            }else{ // The mixed-strategy where Malicious and IDN take actions at certain probabilities
-                if(type.equals("Malicious")){
-                    attack_probability = (c_m + beta * g_a)/(phi*g_a*(2*alpha+beta));
+            } else { // The mixed-strategy where Malicious and IDN take actions at certain probabilities
+                if (type.equals("Malicious")) {
+                    attack_probability = (c_m + beta * g_a) / (phi * g_a * (2 * alpha + beta));
                     Random rand = new Random();
-                    double double_random= rand.nextDouble();
-                    if(double_random <= attack_probability){
-                        this.current_action = "Attack"; 
+                    double double_random = rand.nextDouble();
+                    if (double_random <= attack_probability) {
+                        this.current_action = "Attack";
                         energy_level--;
-                    }else{
-                        this.current_action = "Not"; 
+                    } else {
+                        this.current_action = "Not";
                     }
-                }else if(type.equals("IDN")){
-                    monitor_probability = (g_a - c_a)/(2*alpha*g_a);
+                } else if (type.equals("IDN")) {
+                    monitor_probability = (g_a - c_a) / (2 * alpha * g_a);
                     Random rand = new Random();
-                    double double_random= rand.nextDouble();
-                    if(double_random <= monitor_probability){
-                        this.current_action = "Monitor"; 
-                        if(role.equals("Receiver")){ // doesn't lose energy if it's a Sender
+                    double double_random = rand.nextDouble();
+                    if (double_random <= monitor_probability) {
+                        this.current_action = "Monitor";
+                        if (role.equals("Receiver")) { // doesn't lose energy if it's a Sender
                             energy_level--;
                         }
-                    }else{
-                        this.current_action = "Not"; 
+                    } else {
+                        this.current_action = "Not";
                     }
-                }else{
+                } else {
                     this.current_action = "Not";
                 }
             }
-        }else{ // Our model where p != 1
-            if(type.equals("Malicious")){
-                if(p < p_threshold & phi > phi_threshold){
+        } else { // Our model where p != 1
+            if (type.equals("Malicious")) {
+                if (p < p_threshold & phi > phi_threshold) {
                     this.current_action = "Attack";
                     energy_level--;
-                }else if(p < p_threshold & phi < phi_threshold){
-                    this.current_action = "Attack"; 
+                } else if (p < p_threshold & phi < phi_threshold) {
+                    this.current_action = "Attack";
                     energy_level--;
-                }else if(p > p_threshold & phi < phi_threshold){
-                    this.current_action = "Attack"; 
+                } else if (p > p_threshold & phi < phi_threshold) {
+                    this.current_action = "Attack";
                     energy_level--;
-                }else if(p > p_threshold & phi > phi_threshold){
-                    attack_probability = (c_m + beta * g_a)/(phi*g_a*(2*alpha+beta));
+                } else if (p > p_threshold & phi > phi_threshold) {
+                    attack_probability = (c_m + beta * g_a) / (phi * g_a * (2 * alpha + beta));
                     Random rand = new Random();
-                    double double_random= rand.nextDouble();
-                    if(double_random <= attack_probability){
-                        this.current_action = "Attack"; 
+                    double double_random = rand.nextDouble();
+                    if (double_random <= attack_probability) {
+                        this.current_action = "Attack";
                         energy_level--;
-                    }else{
-                        this.current_action = "Not"; 
+                    } else {
+                        this.current_action = "Not";
                     }
                 }
-            }else if(type.equals("IDN")){
-                if(p <= p_threshold & phi >= phi_threshold){
+            } else if (type.equals("IDN")) {
+                if (p <= p_threshold & phi >= phi_threshold) {
                     this.current_action = "Monitor";
-                    if(role.equals("Receiver")){
+                    if (role.equals("Receiver")) {
                         energy_level--;
                     }
-                }else if(p < p_threshold & phi < phi_threshold){
-                    this.current_action = "Not"; 
-                }else if(p > p_threshold & phi < phi_threshold){
-                    this.current_action = "Not"; 
-                }else if(p > p_threshold & phi > phi_threshold){
-                    monitor_probability = (g_a - c_a)/(2*alpha*p*g_a);
+                } else if (p < p_threshold & phi < phi_threshold) {
+                    this.current_action = "Not";
+                } else if (p > p_threshold & phi < phi_threshold) {
+                    this.current_action = "Not";
+                } else if (p > p_threshold & phi > phi_threshold) {
+                    monitor_probability = (g_a - c_a) / (2 * alpha * p * g_a);
                     Random rand = new Random();
-                    double double_random= rand.nextDouble();
-                    if(double_random <= monitor_probability){
-                        this.current_action = "Monitor"; 
-                        if(role.equals("Receiver")){
+                    double double_random = rand.nextDouble();
+                    if (double_random <= monitor_probability) {
+                        this.current_action = "Monitor";
+                        if (role.equals("Receiver")) {
                             energy_level--;
                         }
-                    }else{
-                        this.current_action = "Not"; 
+                    } else {
+                        this.current_action = "Not";
                     }
                 }
-            }else if(type.equals("Normal")){
+            } else if (type.equals("Normal")) {
                 this.current_action = "Not";
             }
         }
 
-        if(energy_level == 0){
+        if (energy_level == 0) {
             ran_out_of_power = true;
         }
     }
 
-    public void play_dynamic(String role, double belief_phi, double belief_p){
+    public void play_dynamic(String role, double belief_phi, double belief_p) {
 
-        if(type.equals("Normal")){
+        if (type.equals("Normal")) {
             monitor_probability = 0;
         }
 
-        if(belief_p == 1){
-            if(belief_phi < phi_threshold){ // The pure-strategy case where IDN doesn't monitor and Malicious Node always attacks
-                if(type.equals("Malicious")){
+        if (belief_p == 1) {
+            if (belief_phi < phi_threshold) { // The pure-strategy case where IDN doesn't monitor and Malicious Node always attacks
+                if (type.equals("Malicious")) {
                     attack_probability = 1;
                     this.current_action = "Attack";
                     //energy_level--;
-                }else if(type.equals("IDN")){
+                } else if (type.equals("IDN")) {
                     this.current_action = "Not";
-                }else{
+                } else {
                     this.current_action = "Not";
                 }
-            }else{ // The mixed-strategy where Malicious and IDN take actions at certain probabilities
-                if(type.equals("Malicious")){
-                    attack_probability = (c_m + beta * g_a)/(belief_phi*g_a*(2*alpha+beta));
+            } else { // The mixed-strategy where Malicious and IDN take actions at certain probabilities
+                if (type.equals("Malicious")) {
+                    attack_probability = (c_m + beta * g_a) / (belief_phi * g_a * (2 * alpha + beta));
                     Random rand = new Random();
-                    double double_random= rand.nextDouble();
-                    if(double_random <= attack_probability){
+                    double double_random = rand.nextDouble();
+                    if (double_random <= attack_probability) {
                         this.current_action = "Attack";
                         //energy_level--;
-                    }else{
+                    } else {
                         this.current_action = "Not";
                     }
-                }else if(type.equals("IDN")){
-                    monitor_probability = (g_a - c_a)/(2*alpha*g_a);
+                } else if (type.equals("IDN")) {
+                    monitor_probability = (g_a - c_a) / (2 * alpha * g_a);
                     Random rand = new Random();
-                    double double_random= rand.nextDouble();
-                    if(double_random <= monitor_probability){
+                    double double_random = rand.nextDouble();
+                    if (double_random <= monitor_probability) {
                         this.current_action = "Monitor";
-                        if(role.equals("Receiver")){ // doesn't lose energy if it's a Sender
+                        if (role.equals("Receiver")) { // doesn't lose energy if it's a Sender
                             energy_level--;
                         }
-                    }else{
+                    } else {
                         this.current_action = "Not";
                     }
-                }else{
+                } else {
                     this.current_action = "Not";
                 }
             }
-        }else{ // Our model where p != 1
-            if(type.equals("Malicious")){
-                if(belief_p < p_threshold & belief_phi > phi_threshold){
+        } else { // Our model where p != 1
+            if (type.equals("Malicious")) {
+                if (belief_p < p_threshold & belief_phi > phi_threshold) {
                     attack_probability = 1;
                     this.current_action = "Attack";
                     //energy_level--;
-                }else if(belief_p < p_threshold & belief_phi < phi_threshold){
+                } else if (belief_p < p_threshold & belief_phi < phi_threshold) {
                     attack_probability = 1;
                     this.current_action = "Attack";
                     //energy_level--;
-                }else if(belief_p > p_threshold & belief_phi < phi_threshold){
+                } else if (belief_p > p_threshold & belief_phi < phi_threshold) {
                     attack_probability = 1;
                     this.current_action = "Attack";
                     //energy_level--;
-                }else if(belief_p > p_threshold & belief_phi > phi_threshold){
-                    attack_probability = (c_m + beta * g_a)/(belief_phi*g_a*(2*alpha+beta));
+                } else if (belief_p > p_threshold & belief_phi > phi_threshold) {
+                    attack_probability = (c_m + beta * g_a) / (belief_phi * g_a * (2 * alpha + beta));
                     Random rand = new Random();
-                    double double_random= rand.nextDouble();
-                    if(double_random <= attack_probability){
+                    double double_random = rand.nextDouble();
+                    if (double_random <= attack_probability) {
                         this.current_action = "Attack";
                         //energy_level--;
-                    }else{
+                    } else {
                         this.current_action = "Not";
                     }
                 }
-            }else if(type.equals("IDN")){
-                if(belief_p <= p_threshold & belief_phi >= phi_threshold){
+            } else if (type.equals("IDN")) {
+                if (belief_p <= p_threshold & belief_phi >= phi_threshold) {
                     this.current_action = "Monitor";
-                    if(role.equals("Receiver")){
+                    if (role.equals("Receiver")) {
                         energy_level--;
                     }
-                }else if(belief_p < p_threshold & belief_phi < phi_threshold){
+                } else if (belief_p < p_threshold & belief_phi < phi_threshold) {
                     this.current_action = "Not";
-                }else if(belief_p > p_threshold & belief_phi < phi_threshold){
+                } else if (belief_p > p_threshold & belief_phi < phi_threshold) {
                     this.current_action = "Not";
-                }else if(belief_p > p_threshold & belief_phi > phi_threshold){
-                    monitor_probability = (g_a - c_a)/(2*alpha*belief_p*g_a);
+                } else if (belief_p > p_threshold & belief_phi > phi_threshold) {
+                    monitor_probability = (g_a - c_a) / (2 * alpha * belief_p * g_a);
                     Random rand = new Random();
-                    double double_random= rand.nextDouble();
-                    if(double_random <= monitor_probability){
+                    double double_random = rand.nextDouble();
+                    if (double_random <= monitor_probability) {
                         this.current_action = "Monitor";
-                        if(role.equals("Receiver")){
+                        if (role.equals("Receiver")) {
                             energy_level--;
                         }
-                    }else{
+                    } else {
                         this.current_action = "Not";
                     }
                 }
-            }else if(type.equals("Normal")){
+            } else if (type.equals("Normal")) {
                 this.current_action = "Not";
             }
         }
 
-        if(energy_level == 0){
+        if (energy_level == 0) {
             ran_out_of_power = true;
         }
     }

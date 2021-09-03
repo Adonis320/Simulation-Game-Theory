@@ -14,7 +14,8 @@ public class GameNotSpatial {
     public double g_a = 5; // gain on successful attack, also loss on failed defense
     public double alpha = 0.9; // detection rate
     public double beta = 0.005; // false alarm rate
-    public double phi_malicious = 0.9;
+
+    public double phi_malicious = 0.9; // thershold of belief, used in dynamic context
 
     // Simulation setup
     public int nodes_number = 200; // total number of nodes
@@ -82,8 +83,6 @@ public class GameNotSpatial {
             for (int j = 0; j < nodes_number; j++) {
                 game_history[i][j] = new Node(nodes[j]);
             }
-
-            //TimeUnit.SECONDS.sleep(1);
         }
     }
 

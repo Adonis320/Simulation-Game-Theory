@@ -6,35 +6,40 @@ import java.io.*;
 
 public class App 
 {
+
+    public static Tools tools = new Tools();
+    public static int number_of_games = 100;
+    public static List<String[]>[] history_of_stats; // stores the stats for all games
+    public static List<String[]> final_stats = new ArrayList<>(); // stores the final states averaged on all games
+
     public static void main( String[] args ) throws InterruptedException {
         System.setProperty("org.graphstream.ui", "swing");
 
-        Tools tools = new Tools();
-        int number_of_games = 100;
-        List<String[]>[] history_of_stats; // stores the stats for all games
-        List<String[]> final_stats = new ArrayList<>(); // stores the final states averaged on all games
-
+        //Initialization for stats
         history_of_stats = new List[number_of_games];
         final_stats.add(new String[] { "Turns", "Number of detected malicious nodes", "Number of false detections",
                 "Total monitoring costs" });
 
-        int total_idn = 0;
-
         for (int i = 0; i < number_of_games; i++) {
+
+            //Choose the type of simulation
+
             //GameNotSpatial game = new GameNotSpatial();
             //GameSpatial game = new GameSpatial();
             GameSpatialOptimized game = new GameSpatialOptimized();
-            //total_idn += game.get_number_IDN();
+
+            //Choose between static and dynamic analysis
+
             //game.play_game();
             game.play_game_dynamic();
-            System.out.println("Turn "+i);
 
             history_of_stats[i] = game.get_Stats();
         }
 
-        int average_idn = total_idn/number_of_games;
-        System.out.println(average_idn);
+        export_stats();
+    }
 
+    public static void export_stats(){
         for(int i = 0; i < history_of_stats[0].size(); i++){
             int number_detected = 0;
             int number_false_detected = 0;
